@@ -1,0 +1,92 @@
+{
+  "id": "0ab8b83d-e3c4-4580-ba88-2ddf25c40f9a",
+  "title": "Configure Kubegreen",
+  "description": "",
+  "tasks": {
+    "get_workload": {
+      "name": "get_workload",
+      "description": "Executes DQL query",
+      "action": "dynatrace.automations:execute-dql-query",
+      "input": {
+        "query": "fetch logs, from:-24h, to:-1h\n| parse content ,\"LD DQS:requestmethod LD:responsce_codes SPACE LD SPACE LD:type SPACE LD SPACE DQS SPACE  LD:byte_received SPACE LD:byte_sent SPACE LD:response_time SPACE LD:upstream_service_time SPACE DQS SPACE DQS:user_agent SPACE DQS:request_id SPACE DQS:upstream_host SPACE DQS:upstream_ip LD:rest\"\n| filter not  contains(requestmethod,\"/opentelemetry.proto\")\n| filter requestmethod !=\"- - -\"\n| sort timestamp asc\n| summarize count() , first=takeFirst(timestamp),last=takeLast(timestamp), by:{k8s.deployment.name, k8s.namespace.name}\n| fieldsAdd fristts=toTimestamp(first), lastts=toTimestamp(last)\n| fieldsAdd total=lastts-fristts\n| fieldsadd totalduration=toDuration(total)\n| filter totalduration < 8h and  totalduration > 1s\n| summarize nsfirst=takeFirst(first), nslast=takeLast(last), by:{k8s.namespace.name}\n| fieldsRename namespace = k8s.namespace.name"
+      },
+      "position": {
+        "x": 0,
+        "y": 1
+      },
+      "predecessors": []
+    },
+    "send_message_1": {
+      "name": "send_message_1",
+      "description": "Send a message to a Slack workspace",
+      "action": "dynatrace.slack:slack-send-message",
+      "input": {
+        "channel": "C04SRLRADMZ",
+        "message": "*SleepInfo Assistant*\nHello,  \nFrom observability data of the last 24h,\nwe could reduce energy consumption by creating the following configuration:\n{% for sleep in result(\"configure_sleep_object\").configs %}\n- For *{{ sleep.namespace}}*\n  Content of the sleepInfo: \n   ```{{ sleep.yaml }}```\n{% endfor %}\n",
+        "reaction": [],
+        "connection": "vu9U3hXa3q0AAAABAB5hcHA6ZHluYXRyYWNlLnNsYWNrOmNvbm5lY3Rpb24ABnRlbmFudAAGdGVuYW50ACRhNTJjMDM2ZC1hNGJkLTM0NWMtOTQ5OC0zMzEzMzE1NWNmZWK-71TeFdrerQ",
+        "workflowID": "{{ execution().workflow.id }}",
+        "channelType": "id",
+        "executionID": "{{ execution().id }}",
+        "executionDate": "{{ execution().started_at }}",
+        "appendToThread": false,
+        "selectedRequestType": 0,
+        "attachmentToggleValue": "none"
+      },
+      "position": {
+        "x": 0,
+        "y": 3
+      },
+      "predecessors": [
+        "configure_sleep_object"
+      ],
+      "conditions": {
+        "states": {
+          "configure_sleep_object": "SUCCESS"
+        }
+      }
+    },
+    "configure_sleep_object": {
+      "name": "configure_sleep_object",
+      "description": "Build a custom task running js Code",
+      "action": "dynatrace.automations:run-javascript",
+      "input": {
+        "script": "// optional import of sdk modules\nimport { execution } from '@dynatrace-sdk/automation-utils';\n\ntype infoSleep = {\n  namespace: string\n  yaml: string\n}\ntype Result = {\n  configs: infoSleep[]\n}\n\nexport default async function ({ execution_id }) {\n const ex = await execution(execution_id);\n  console.log('Automated script execution on behalf of', ex.trigger);\n  var result = await ex.result('get_workload')\n\n  var resultat=Array<infoSleep> = new Array();\n  for (const workload of result.records )\n  {\n\n    let sleppInfo={}\n    sleppInfo.apiVersion=\"kube-green.com/v1alpha1\"\n    sleppInfo.kind=\"SleepInfo\"\n    sleppInfo.metadata={}\n    sleppInfo.metadata.name=\"sleep-\"+ workload.namespace\n    sleppInfo.metadata.namespace=workload.namespace\n    sleppInfo.spec={}\n    sleppInfo.spec.weekdays=\"*\"\n  \n    var addMlSeconds = 30 *60*1000\n    var lastdate=new Date(workload.nslast)\n    var lastime=lastdate.getTime()+addMlSeconds\n    var firstdate=new Date(workload.nsfirst)\n    var firsttime=firstdate.getTime()-addMlSeconds\n  \n    var sleepdate=new Date (lastime ) \n    \n   \n    \n    var waikfinaledate=new Date(firsttime )\n   \n    sleppInfo.spec.sleepAt=sleepdate.getHours()+\":\"+sleepdate.getMinutes()\n    sleppInfo.spec.wakeUpAt=waikfinaledate.getHours()+\":\"+waikfinaledate.getMinutes() \n    \n    let sleppInfoyaml=\"apiVersion: kube-green.com/v1alpha1\\n\"\n    sleppInfoyaml+=\"kind: SleepInfo\\n\"\n    sleppInfoyaml+=\"metadata:\\n  name: sleep-\"+ workload.namespace+\"\\n\"\n    sleppInfoyaml+=\"  namespace: \"+workload.namespace+\"\\n\"\n    sleppInfoyaml+=\"spec:\\n  weekdays: \\\"*\\\"\\n\"\n    sleppInfoyaml+=\"  sleepAt: \\\"\"+sleepdate.getHours()+\":\"+sleepdate.getMinutes()+\"\\\"\\n\"\n    sleppInfoyaml+=\"  wakeUpAt: \\\"\"+waikfinaledate.getHours()+\":\"+waikfinaledate.getMinutes() +\"\\\"\\n\"\n    sleppInfoyaml+=\"  timeZone: \\\"Europe/Rome\\\"\"\n\n\n    let sleppresult: sleppInfo = {\n      namespace: workload.namespace,\n      yaml: sleppInfoyaml\n    }\n    \n    resultat.push(sleppresult)\n  }\n  const res: Result = { configs: resultat}\n  return res;\n}"
+      },
+      "position": {
+        "x": 0,
+        "y": 2
+      },
+      "predecessors": [
+        "get_workload"
+      ],
+      "conditions": {
+        "states": {
+          "get_workload": "OK"
+        }
+      }
+    }
+  },
+  "actor": "97e8c860-1b2b-4995-b55a-d72382d35243",
+  "owner": "97e8c860-1b2b-4995-b55a-d72382d35243",
+  "ownerType": "USER",
+  "isPrivate": true,
+  "trigger": {
+    "schedule": {
+      "rule": null,
+      "trigger": {
+        "type": "time",
+        "time": "09:00"
+      },
+      "timezone": "Europe/Paris",
+      "isActive": true,
+      "isFaulty": false,
+      "nextExecution": "2023-10-10T07:00:00.000Z",
+      "filterParameters": {
+        "earliestStart": "2023-10-04"
+      },
+      "inputs": {}
+    }
+  },
+  "schemaVersion": 3
+}
