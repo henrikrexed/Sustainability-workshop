@@ -136,7 +136,7 @@ fetch logs, from:-24h, to:-1h
 ```
 This query will look at the access logs produced by Envoy and return all the namespaces having no request since a period of 3h.
 
-### 8.Aumate the configurat of the SleepInfo CRD of Kube-Green
+### 8.Automate the configuration of the SleepInfo CRD of Kube-Green
 To automate the configuration of your Sleepinfo CRD, we would upload in dynatrace the workload located in : `dynatrace/wf_configure_kubegreen_0ab8b83d-e3c4-4580-ba88-2ddf25c40f9a.json`
 This workload used Slack, make sure to configure the [slack integration in dynatrace](https://www.dynatrace.com/support/help/platform-modules/cloud-automation/workflows/actions/slack).
 
