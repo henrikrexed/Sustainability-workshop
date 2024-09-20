@@ -103,7 +103,7 @@ helm upgrade --install keptn keptn/keptn -n keptn-system --create-namespace --wa
 helm repo add argo https://argoproj.github.io/argo-helm
 helm install argo argo/argo-workflows --create-namespace  -n argo -f argo/values.yaml
 kubectl apply -f argo/plugin.yaml
-kubectl apply -f argo/token.yaml
+kubectl apply -f argo/token.yaml -n argo
 kubectl apply -f https://raw.githubusercontent.com/bacherfl/argo-keptn-plugin/main/config/rbac.yaml
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts

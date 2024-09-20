@@ -422,7 +422,7 @@ spec:
               args: [ "-u", "70", "-d", "59m" ]
               env:
                 - name: FRONTEND_ADDR
-                  value: "hipstershop.IP_TO_REPLACE2.nip.io"
+                  value: "hipstershop.IP_TO_REPLACE.nip.io"
                 - name: K6_DYNATRACE_URL
                   valueFrom:
                     secretKeyRef:
@@ -992,6 +992,11 @@ spec:
             periodSeconds: 15
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:9555"]
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:8080" ]
+            failureThreshold: 30
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
