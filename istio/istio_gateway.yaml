@@ -12,7 +12,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - "hipstershop.34.141.114.72.nip.io"
+        - "hipstershop.IP_TO_REPLACE.nip.io"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -21,7 +21,7 @@ metadata:
   namespace: hipster-shop
 spec:
   hosts:
-    - "hipstershop.34.141.114.72.nip.io"
+    - "hipstershop.IP_TO_REPLACE.nip.io"
   gateways:
     - hipstershop-gateway
   http:
@@ -48,7 +48,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - "oteldemo.34.141.114.72.nip.io"
+        - "oteldemo.IP_TO_REPLACE.nip.io"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -57,7 +57,7 @@ metadata:
   namespace: otel-demo
 spec:
   hosts:
-    - "oteldemo.34.141.114.72.nip.io"
+    - "oteldemo.IP_TO_REPLACE.nip.io"
   gateways:
     - oteldemo-gateway
   http:

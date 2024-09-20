@@ -1521,7 +1521,7 @@ spec:
             - name: LOCUST_SPAWN_RATE
               value: "1"
             - name: LOCUST_HOST
-              value: http://oteldemo.34.141.114.72.nip.io
+              value: http://oteldemo.IP_TO_REPLACE.nip.io
             - name: LOCUST_HEADLESS
               value: "false"
             - name: LOCUST_AUTOSTART
