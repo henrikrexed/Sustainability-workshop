@@ -1,0 +1,22 @@
+apiVersion: metrics.keptn.sh/v1
+kind: AnalysisDefinition
+metadata:
+  name: energy-usage
+spec:
+  objectives:
+    - analysisValueTemplateRef:
+        name: energy-usage
+        namespace: hipster-shop
+      target:
+        failure:
+          greaterThan :
+            fixedValue: 35
+        warning:
+          inRange:
+            lowBound: 25
+            highBound: 30
+      weight: 1
+      keyObjective: false
+  totalScore:
+    passPercentage: 90
+    warningPercentage: 75

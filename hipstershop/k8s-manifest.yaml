@@ -31,15 +31,11 @@ spec:
         app.kubernetes.io/component: emailservice
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: emailservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
-
     spec:
       terminationGracePeriodSeconds: 5
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/emailservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/emailservice:9e830c2
           ports:
             - containerPort: 8080
           env:
@@ -48,10 +44,12 @@ spec:
             - name: DISABLE_PROFILER
               value: "1"
           readinessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:8080"]
           livenessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:8080"]
@@ -78,6 +76,7 @@ spec:
     - name: grpc
       port: 5000
       targetPort: 8080
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -112,20 +111,18 @@ spec:
         app.kubernetes.io/instance: hipster-shop
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: checkoutservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
-
     spec:
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/checkoutservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/checkoutservice:9e830c2
           ports:
             - containerPort: 5050
           readinessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:5050"]
           livenessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:5050"]
           env:
@@ -143,12 +140,12 @@ spec:
               value: "currencyservice:7000"
             - name: CART_SERVICE_ADDR
               value: "cartservice:7070"
-          # - name: DISABLE_STATS
-          #   value: "1"
-          # - name: DISABLE_TRACING
-          #   value: "1"
-          # - name: DISABLE_PROFILER
-          #   value: "1"
+            - name: DISABLE_STATS
+              value: "1"
+            - name: DISABLE_TRACING
+              value: "1"
+            - name: DISABLE_PROFILER
+              value: "1"
           # - name: JAEGER_SERVICE_ADDR
           #   value: "jaeger-collector:14268"
           resources:
@@ -174,6 +171,7 @@ spec:
     - name: grpc
       port: 5050
       targetPort: 5050
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -208,10 +206,6 @@ spec:
         app.kubernetes.io/instance: hipster-shop
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: recommendationservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
-
     spec:
       terminationGracePeriodSeconds: 5
       # imagePullsecrets required for perform2019????
@@ -219,28 +213,37 @@ spec:
         - name: demo-registry
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/recommendationservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/recommendationservice:9e830c2
           ports:
             - containerPort: 8080
           readinessProbe:
             periodSeconds: 5
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:8080"]
           livenessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:8080"]
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:8080" ]
+            failureThreshold: 30
+            periodSeconds: 10
           env:
             - name: PORT
               value: "8080"
             - name: PRODUCT_CATALOG_SERVICE_ADDR
               value: "productcatalogservice:3550"
-          # - name: DISABLE_TRACING
-          #   value: "1"
-          # - name: DISABLE_PROFILER
-          #   value: "1"
-          # - name: DISABLE_DEBUGGER
-          #   value: "1"
+            - name: DISABLE_TRACING
+              value: "1"
+            - name: DISABLE_PROFILER
+              value: "1"
+            - name: DISABLE_DEBUGGER
+              value: "1"
           resources:
             requests:
               cpu: 100m
@@ -264,6 +267,7 @@ spec:
     - name: grpc
       port: 8080
       targetPort: 8080
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -297,9 +301,6 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: frontend
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
         proxy.istio.io/config: |-
           proxyStatsMatcher:
             inclusionRegexps:
@@ -309,11 +310,12 @@ spec:
         - name: server
           # both look good
           #image: registry.lab.dynatrace.org/cloudplatform/hipster-shop-frontend
-          image: gcr.io/dynatrace-demoability/online-boutique/frontend:bb9f28d
+          image: gcr.io/dynatrace-demoability/frontend:9e830c2
           ports:
             - containerPort: 8080
           readinessProbe:
             initialDelaySeconds: 10
+            timeoutSeconds: 5
             httpGet:
               path: "/_healthz"
               port: 8080
@@ -322,6 +324,7 @@ spec:
                   value: "shop_session-id=x-readiness-probe"
           livenessProbe:
             initialDelaySeconds: 10
+            timeoutSeconds: 5
             httpGet:
               path: "/_healthz"
               port: 8080
@@ -347,10 +350,10 @@ spec:
               value: "adservice:9555"
             - name: ENV_PLATFORM
               value: "gcp"
-          # - name: DISABLE_TRACING
-          #   value: "1"
-          # - name: DISABLE_PROFILER
-          #   value: "1"
+            - name: DISABLE_TRACING
+              value: "1"
+            - name: DISABLE_PROFILER
+              value: "1"
           # - name: JAEGER_SERVICE_ADDR
           #   value: "jaeger-collector:14268"
           resources:
@@ -376,6 +379,7 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
+      appProtocol: http
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -388,7 +392,7 @@ metadata:
     app.kubernetes.io/version: "1.0.0"
     dt.owner: hipster-shop
 spec:
-  schedule: "0 13 * * *"
+  schedule: "* 10 * * *"
   jobTemplate:
     spec:
       template:
@@ -418,7 +422,7 @@ spec:
               args: [ "-u", "70", "-d", "59m" ]
               env:
                 - name: FRONTEND_ADDR
-                  value: "frontend"
+                  value: "hipstershop.34.141.114.72.nip.io"
                 - name: K6_DYNATRACE_URL
                   valueFrom:
                     secretKeyRef:
@@ -469,14 +473,12 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: paymentservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
+
     spec:
       terminationGracePeriodSeconds: 5
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/paymentservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/paymentservice:9e830c2
           ports:
             - containerPort: 50051
           env:
@@ -485,18 +487,14 @@ spec:
             - name: MEMORYLEAK
               value: "0"
           readinessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:50051"]
           livenessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:50051"]
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 1024Mi
+
 ---
 apiVersion: v1
 kind: Service
@@ -513,6 +511,7 @@ spec:
     - name: grpc
       port: 50051
       targetPort: 50051
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -543,35 +542,35 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: productcatalogservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
+
 
     spec:
       terminationGracePeriodSeconds: 5
       containers:
         - name: server
           # image: registry.lab.dynatrace.org/cloudplatform/hipster-shop-productcatalogservice
-          image: gcr.io/dynatrace-demoability/online-boutique/productcatalogservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/productcatalogservice:dd747d8-dirty
           ports:
             - containerPort: 3550
           env:
             - name: PORT
               value: "3550"
-           # - name: EXTRA_LATENCY
-            #  value: "1s"
-          # - name: DISABLE_STATS
-          #   value: "1"
-          # - name: DISABLE_TRACING
-          #   value: "1"
-          # - name: DISABLE_PROFILER
-          #   value: "1"
+            - name: EXTRA_LATENCY
+              value: "1s"
+            - name: DISABLE_STATS
+              value: "1"
+            - name: DISABLE_TRACING
+              value: "1"
+            - name: DISABLE_PROFILER
+              value: "1"
           # - name: JAEGER_SERVICE_ADDR
           #   value: "jaeger-collector:14268"
           readinessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:3550"]
           livenessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:3550"]
           resources:
@@ -597,6 +596,7 @@ spec:
     - name: grpc
       port: 3550
       targetPort: 3550
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -629,9 +629,6 @@ spec:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: cartservice
         app.kubernetes.io/version: "1.0.0"
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
 
     spec:
       terminationGracePeriodSeconds: 5
@@ -656,10 +653,12 @@ spec:
               memory: 1024Mi
           readinessProbe:
             initialDelaySeconds: 15
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
           livenessProbe:
             initialDelaySeconds: 15
+            timeoutSeconds: 5
             periodSeconds: 10
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
@@ -679,6 +678,7 @@ spec:
     - name: grpc
       port: 7070
       targetPort: 7070
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -710,31 +710,31 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: currencyservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
+
 
     spec:
       terminationGracePeriodSeconds: 5
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/currencyservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/currencyservice:9e830c2
           ports:
             - name: grpc
               containerPort: 7000
           env:
             - name: PORT
               value: "7000"
-          # - name: DISABLE_TRACING
-          #   value: "1"
-          # - name: DISABLE_PROFILER
-          #   value: "1"
-          # - name: DISABLE_DEBUGGER
-          #   value: "1"
+            - name: DISABLE_TRACING
+              value: "1"
+            - name: DISABLE_PROFILER
+              value: "1"
+            - name: DISABLE_DEBUGGER
+              value: "1"
           readinessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:7000"]
           livenessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:7000"]
           resources:
@@ -760,6 +760,7 @@ spec:
     - name: grpc
       port: 7000
       targetPort: 7000
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -791,14 +792,11 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: shippingservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
 
     spec:
       containers:
         - name: server
-          image: gcr.io/dynatrace-demoability/online-boutique/shippingservice:bb9f28d
+          image: gcr.io/dynatrace-demoability/shippingservice:9e830c2
           ports:
             - containerPort: 50051
           env:
@@ -813,10 +811,12 @@ spec:
           # - name: JAEGER_SERVICE_ADDR
           #   value: "jaeger-collector:14268"
           readinessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:50051"]
           livenessProbe:
+            timeoutSeconds: 5
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:50051"]
           resources:
@@ -842,6 +842,7 @@ spec:
     - name: grpc
       port: 50051
       targetPort: 50051
+      appProtocol: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -873,9 +874,7 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: redis-cart
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
+
 
     spec:
       containers:
@@ -884,10 +883,12 @@ spec:
           ports:
             - containerPort: 6379
           readinessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
             tcpSocket:
               port: 6379
           livenessProbe:
+            timeoutSeconds: 5
             periodSeconds: 5
             tcpSocket:
               port: 6379
@@ -929,6 +930,7 @@ spec:
     - name: redis
       port: 6379
       targetPort: 6379
+      appProtocol: tcp
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -960,9 +962,6 @@ spec:
       annotations:
         app.kubernetes.io/part-of: hipster-shop
         app.kubernetes.io/name: adservice
-        metrics.dynatrace.com/port: '15020'
-        metrics.dynatrace.com/scrape: 'true'
-        metrics.dynatrace.com/path: '/stats/prometheus'
 
     spec:
       terminationGracePeriodSeconds: 5
@@ -982,11 +981,13 @@ spec:
               cpu: 200m
               memory: 400Mi
           readinessProbe:
+            timeoutSeconds: 5
             initialDelaySeconds: 20
             periodSeconds: 15
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:9555"]
           livenessProbe:
+            timeoutSeconds: 5
             initialDelaySeconds: 20
             periodSeconds: 15
             exec:
@@ -1007,3 +1008,4 @@ spec:
     - name: grpc
       port: 9555
       targetPort: 9555
+      appProtocol: grpc

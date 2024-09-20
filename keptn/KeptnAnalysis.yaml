@@ -1,0 +1,14 @@
+apiVersion: metrics.keptn.sh/v1
+kind: Analysis
+metadata:
+  labels:
+  name: energy-usage
+spec:
+  timeframe:
+    recent: 5m
+  args:
+    ns: hipster-shop
+    pod: checkoutservice-
+  analysisDefinition:
+    name: energy-usage
+    namespace: hipster-shop

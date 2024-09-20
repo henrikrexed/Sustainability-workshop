@@ -1,0 +1,32 @@
+apiVersion: lifecycle.keptn.sh/v1
+kind: KeptnTaskDefinition
+metadata:
+  name: loadtest-task
+spec:
+  container:
+    name: k6load
+    image: hrexed/k6-onlineboutique:dtoutput
+    imagePullPolicy: Always
+    args: [ "-u", "70", "-d", "5m" ]
+    env:
+      - name: FRONTEND_ADDR
+        value: "frontend"
+      - name: K6_DYNATRACE_URL
+        valueFrom:
+          secretKeyRef:
+            name: dynatrace
+            key: dynatrace_oltp_url
+      - name: K6_DYNATRACE_INSECURE_SKIP_TLS_VERIFY
+        value: "true"
+      - name: K6_DYNATRACE_APITOKEN
+        valueFrom:
+          secretKeyRef:
+            name: dynatrace
+            key: dt_api_token
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi

@@ -1,0 +1,72 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: hipstershop-gateway
+  namespace: hipster-shop
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "hipstershop.34.141.114.72.nip.io"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: hipster-shop-httproute
+  namespace: hipster-shop
+spec:
+  hosts:
+    - "hipstershop.34.141.114.72.nip.io"
+  gateways:
+    - hipstershop-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            port:
+              number: 80
+            host: frontend
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: oteldemo-gateway
+  namespace: otel-demo
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "oteldemo.34.141.114.72.nip.io"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: oteldemo-httproute
+  namespace: otel-demo
+spec:
+  hosts:
+    - "oteldemo.34.141.114.72.nip.io"
+  gateways:
+    - oteldemo-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            port:
+              number: 8080
+            host: opentelemetry-demo-frontendproxy
+---

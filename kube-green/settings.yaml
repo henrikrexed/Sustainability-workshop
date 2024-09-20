@@ -1,0 +1,10 @@
+apiVersion: kube-green.com/v1alpha1
+kind: SleepInfo
+metadata:
+  name: sleep-hipster-shop
+  namespace: hipster-shop
+spec:
+  weekdays: "*"
+  sleepAt: "1:29"
+  wakeUpAt: "23:30"
+  timeZone: "Europe/Rome"

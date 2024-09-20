@@ -39,21 +39,27 @@ curl -L https://istio.io/downloadIstio | sh -
 This command download the latest version of istio ( in our case istio 1.18.2) compatible with our operating system.
 2. Add istioctl to you PATH
 ```shell
-cd istio-1.19.0
+cd istio-1.23.1
 ```
 this directory contains samples with addons . We will refer to it later.
 ```shell
 export PATH=$PWD/bin:$PATH
 ```
+### 4 .Vcluster
 
-### 4.Clone Github repo
+1. Download vcluster
+```shell
+vcluster create oteldemo --expose -f vcluster-manifest/value.yaml
+```
+
+### 5.Clone Github repo
 ```shell
 git clone https://github.com/henrikrexed/sustainability-workshop
 cd sustainability-workshop
 ```
 
 
-### 5. Dynatrace 
+### 6. Dynatrace 
 ##### 1. Dynatrace Tenant - start a trial
 If you don't have any Dynatrace tenant , then i suggest to create a trial using the following link : [Dynatrace Trial](https://bit.ly/3KxWDvY)
 Once you have your Tenant save the Dynatrace (including https) tenant URL in the variable `DT_TENANT_URL` (for example : https://dedededfrf.live.dynatrace.com)

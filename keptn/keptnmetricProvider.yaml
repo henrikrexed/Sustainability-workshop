@@ -1,0 +1,29 @@
+apiVersion: metrics.keptn.sh/v1
+kind: KeptnMetricsProvider
+metadata:
+  name: prometheus-provider
+spec:
+  type: prometheus
+  targetServer: "http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090"
+---
+apiVersion: metrics.keptn.sh/v1
+kind: KeptnMetricsProvider
+metadata:
+  name: dynatrace
+spec:
+  type: dynatrace
+  targetServer: "https://oat05854.dev.dynatracelabs.com"
+  secretKeyRef:
+    name: dynatrace
+    key: dt_api_token
+---
+apiVersion: metrics.keptn.sh/v1
+kind: KeptnMetricsProvider
+metadata:
+  name: dynatrace-dql
+spec:
+  type: dql
+  targetServer: "https://oat05854.dev.dynatracelabs.com"
+  secretKeyRef:
+    name: dynatrace
+    key: dt_api_token
