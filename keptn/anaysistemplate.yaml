@@ -4,5 +4,5 @@ metadata:
   name: energy-usage
 spec:
   provider:
-    name: prometheus
+    name: prometheus-provider
   query: '(sum(kepler_container_joules_total{pod_name=~"{{.pod}}.*",container_namespace="{{.ns}}"})/sum(kepler_container_joules_total{container_namespace="{{.ns}}"}))*100'

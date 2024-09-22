@@ -184,9 +184,9 @@ kubectl apply -f istio/istio_gateway.yaml
 
 kubectl apply -f keptn/keptnmetricProvider.yaml -n hipster-shop
 kubectl apply -f keptn/keptnTask.yaml -n hipster-shop
-kubectl apply -f keptn/keptnTask.yaml -n hipster-shop
 kubectl apply -f keptn/KeptnAnalysis.yaml -n hipster-shop
 kubectl apply -f keptn/KeptnAnalysis.yaml -n hipster-shop
+kubectl apply -f keptn/anaysistemplate.yaml -n hipster-shop
 kubectl apply -f keptn/analysisdefinition.yaml -n hipster-shop
 
 echo "--------------Demo--------------------"

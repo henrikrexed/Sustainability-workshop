@@ -21,7 +21,7 @@ spec:
             arguments:
               parameters:
                 - name: query
-                  value: analysis/hipster-shop/energy-usage/5m/workload=checkoutservice
+                  value: analysis/hipster-shop/energy-usage/5m/pod=checkoutservice;ns=hipster-shop
                 - name: start
                   value: "{{tasks.execute-load-tests.outputs.parameters.start}}"
                 - name: end
