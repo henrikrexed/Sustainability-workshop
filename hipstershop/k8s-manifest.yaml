@@ -218,11 +218,11 @@ spec:
             - containerPort: 8080
           readinessProbe:
             periodSeconds: 5
-            timeoutSeconds: 5
+            timeoutSeconds: 10
             exec:
               command: ["/bin/grpc_health_probe", "-addr=:8080"]
           livenessProbe:
-            timeoutSeconds: 5
+            timeoutSeconds: 10
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 3
@@ -981,7 +981,7 @@ spec:
               cpu: 200m
               memory: 400Mi
           readinessProbe:
-            timeoutSeconds: 5
+            timeoutSeconds: 10
             initialDelaySeconds: 20
             periodSeconds: 15
             exec:
@@ -994,7 +994,7 @@ spec:
               command: ["/bin/grpc_health_probe", "-addr=:9555"]
           startupProbe:
             exec:
-              command: [ "/bin/grpc_health_probe", "-addr=:8080" ]
+              command: [ "/bin/grpc_health_probe", "-addr=:9555" ]
             failureThreshold: 30
             periodSeconds: 10
 ---
