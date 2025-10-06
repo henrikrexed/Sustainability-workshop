@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travel-advisor-azure
+  namespace: travel-advisor-azure
+spec:
+  selector:
+    matchLabels:
+      name: travel-advisor-azure
+  template:
+    metadata:
+      labels:
+        name: travel-advisor-azure
+    spec:
+      containers:
+        - name: travel-advisor-azure
+          image: hrexed/openaiobservability:ecologistai-0.22
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: OTEL_ENDPOINT
+              value: "http://otel-collector.default.svc.cluster.local:4318"
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: secrets
+              readOnly: true
+              mountPath: "/etc/secrets"
+      volumes:
+        - name: secrets
+          projected:
+            sources:
+              - secret:
+                  name: azure
+                  optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: travel-advisor-azure
+  namespace: travel-advisor-azure
+spec:
+  type: ClusterIP
+  selector:
+    name: travel-advisor-azure
+  ports:
+    - port: 80
+      name: http
+      targetPort: 8080
+      protocol: TCP

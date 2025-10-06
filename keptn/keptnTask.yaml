@@ -11,11 +11,6 @@ spec:
     env:
       - name: FRONTEND_ADDR
         value: "frontend"
-      - name: K6_DYNATRACE_URL
-        valueFrom:
-          secretKeyRef:
-            name: dynatrace
-            key: dynatrace_oltp_url
       - name: K6_DYNATRACE_INSECURE_SKIP_TLS_VERIFY
         value: "true"
       - name: K6_DYNATRACE_APITOKEN
@@ -23,6 +18,11 @@ spec:
           secretKeyRef:
             name: dynatrace
             key: dt_api_token
+      - name: K6_DYNATRACE_URL
+        valueFrom:
+          secretKeyRef:
+            name: dynatrace
+            key: dynatrace_oltp_url
     resources:
       requests:
         cpu: 100m

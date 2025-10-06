@@ -1,4 +1,4 @@
-apiVersion: dynatrace.com/v1beta2
+apiVersion: dynatrace.com/v1beta5
 kind: DynaKube
 metadata:
   name: dynakube
@@ -83,7 +83,7 @@ spec:
       # Optional: If you want to use CSIDriver; disable if your cluster does not have 'nodes' to fall back to the volume approach.
       # Defaults to false
       #
-      useCSIDriver: true
+      #useCSIDriver: true
 
       namespaceSelector:
         matchLabels:

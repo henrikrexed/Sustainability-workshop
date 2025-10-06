@@ -28,38 +28,18 @@ cloudprofiler.googleapis.com \
 ```shell
 ZONE=europe-west3-a
 NAME=sustainabilty-workshop
-gcloud container clusters create ${NAME} --zone=${ZONE} --machine-type=e2-standard-8 --num-nodes=2
-```
-### 3.Istio
-
-1. Download Istioctl
-```shell
-curl -L https://istio.io/downloadIstio | sh -
-```
-This command download the latest version of istio ( in our case istio 1.18.2) compatible with our operating system.
-2. Add istioctl to you PATH
-```shell
-cd istio-1.23.1
-```
-this directory contains samples with addons . We will refer to it later.
-```shell
-export PATH=$PWD/bin:$PATH
-```
-### 4 .Vcluster
-
-1. Download vcluster
-```shell
-vcluster create oteldemo --expose -f vcluster-manifest/value.yaml
+gcloud container clusters create ${NAME} --zone=${ZONE} --machine-type=e2-standard-4 --num-nodes=2 --monitoring=NONE --logging=NONE
 ```
 
-### 5.Clone Github repo
+
+### 3.Clone Github repo
 ```shell
 git clone https://github.com/henrikrexed/sustainability-workshop
 cd sustainability-workshop
 ```
 
 
-### 6. Dynatrace 
+### 4. Dynatrace 
 ##### 1. Dynatrace Tenant - start a trial
 If you don't have any Dynatrace tenant , then i suggest to create a trial using the following link : [Dynatrace Trial](https://bit.ly/3KxWDvY)
 Once you have your Tenant save the Dynatrace (including https) tenant URL in the variable `DT_TENANT_URL` (for example : https://dedededfrf.live.dynatrace.com)
@@ -102,11 +82,22 @@ Save the value of the token . We will use it later to store in a k8S secret
 DATA_INGEST_TOKEN=<YOUR TOKEN VALUE>
 ```
 
+### 5. AZURE OpenAI
+You will have to provision a [Azure AI OpenAI service](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference)
+#### 1. OpenAI Endpoint
+```shell
+AZURE_OPENAI_ENDPOINT="<YOUR OPENAI ENDPOINT>"
+```
+#### 2. OpenAI Token
+```shell
+AZURE_OPENAI_KEY="<YOUR OPENAI KEY>"
+```
+
 ### 6. Run the deployment script
 ```shell
 cd ..
 chmod 777 deployment.sh
-./deployment.sh  --clustername "${NAME}" --dturl "${DT_TENANT_URL}" --dtingesttoken "${DATA_INGEST_TOKEN}" --dtoperatortoken "${API_TOKEN}"
+./deployment.sh  --clustername "${NAME}" --dturl "${DT_TENANT_URL}" --dtingesttoken "${DATA_INGEST_TOKEN}" --dtoperatortoken "${API_TOKEN}" --openAIendpoint "${AZURE_OPENAI_ENDPOINT}" --openAITOKEN "${AZURE_OPENAI_KEY}"
 ```
 ### 6. Deploy the Kepler Dashboard
 

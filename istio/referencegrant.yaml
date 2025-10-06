@@ -1,0 +1,38 @@
+# Allow otel-demo namespace routes to reference services in istio-system
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-oteldemo-cross-namespace
+  namespace: istio-system
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: otel-demo
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute
+      namespace: otel-demo
+    - group: gateway.networking.k8s.io
+      kind: TCPRoute
+      namespace: otel-demo
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: hipster-shop
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute
+      namespace: hipster-shop
+    - group: gateway.networking.k8s.io
+      kind: TCPRoute
+      namespace: hipster-shop
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: travel-advisor-azure
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute
+      namespace: travel-advisor-azure
+    - group: gateway.networking.k8s.io
+      kind: TCPRoute
+      namespace: travel-advisor-azure
+  to:
+    - group: ""
+      kind: Service
